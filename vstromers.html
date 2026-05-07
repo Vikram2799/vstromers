@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V-Stromers CBE — Club Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,600;0,800;0,900;1,800&family=Barlow:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:#F4F1EC; --bg2:#EDEAE3; --bg3:#E5E1D8;
+  --surface:#FFFFFF; --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
+  --orange:#D94F0A; --orange2:#F26522; --orange-dim:rgba(217,79,10,0.07); --orange-glow:rgba(217,79,10,0.18);
+  --gold:#B8860B; --gold-bg:#FFF8E1; --gold-border:rgba(184,134,11,0.25);
+  --silver:#5A7080; --silver-bg:#EDF3F7; --silver-border:rgba(90,112,128,0.25);
+  --bronze:#8B5A2B; --bronze-bg:#FDF0E4; --bronze-border:rgba(139,90,43,0.25);
+  --green:#1A8A4A; --text:#1A1612; --text2:#3D3730; --muted:#7A7268; --muted2:#5A5248;
+  --yellow-hl:#FFD600;
+}
+html { scroll-behavior: smooth; }
+body { font-family:'Barlow',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+/* ═══ HERO ═══ */
+.hero { position:relative; min-height:100vh; display:flex; flex-direction:column; overflow:hidden; background:var(--surface); border-bottom:2px solid var(--border2); }
+.hero::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(217,79,10,0.12) 1px,transparent 1px),linear-gradient(90deg,rgba(217,79,10,0.05) 1px,transparent 1px); background-size:56px 56px; mask-image:radial-gradient(ellipse 80% 80% at 50% 40%,black 20%,transparent 100%); }
+.hero::after { content:''; position:absolute; top:-10%; left:50%; transform:translateX(-50%); width:800px; height:400px; background:radial-gradient(ellipse,rgba(217,79,10,0.08) 0%,transparent 70%); pointer-events:none; }
+
+/* NAV */
+.nav { position:relative; z-index:10; display:flex; justify-content:space-between; align-items:center; padding:1.25rem 3rem; border-bottom:1px solid var(--border); background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); }
+.nav-logo { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--text);font-style: italic; }
+.nav-logo .hl-orange { color:var(--orange); }
+.nav-logo .hl-black {
+  color: #000;
+}
+.nav-logo .hl-yellow {
+  color: var(--yellow-hl);
+  -webkit-text-stroke: 0.6px #111;
+  paint-order: stroke fill;
+}
+.nav-right { display:flex; align-items:center; gap:2rem; }
+.nav-mono { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; }
+.nav-dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); display:inline-block; margin-right:6px; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+/* HERO CONTENT */
+.hero-content { position:relative; z-index:5; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 2rem 2rem; text-align:center; }
+.hero-eyebrow { font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:var(--orange); margin-bottom:1.25rem; animation:fadeDown 0.8s ease both; }
+.hero-title { font-family:'Barlow Condensed',sans-serif; font-size:clamp(4.5rem,13vw,11rem); font-weight:900; line-height:0.85; letter-spacing:-0.01em; text-transform:uppercase; color:var(--text); animation:fadeDown 0.8s 0.1s ease both; }
+.hero-title .hl { color:var(--orange); }
+.hero-title .hl-black {
+  color: #000;
+}
+.hero-title .outline {
+  color: var(--yellow-hl);
+  -webkit-text-stroke: 0px #111;
+  paint-order: stroke fill;
+  display:block;
+}
+.hero-sub { font-family:'Barlow Condensed',sans-serif; font-size:clamp(1rem,2.5vw,1.5rem); font-weight:300; letter-spacing:0.22em; text-transform:uppercase; color:var(--muted); margin-top:1rem; animation:fadeDown 0.8s 0.2s ease both; }
+
+/* ODOMETER ROW */
+.odometer-row { display:flex; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-top:3rem; width:100%; max-width:1100px; animation:fadeUp 0.8s 0.3s ease both; position:relative; z-index:5; background:rgba(255,255,255,0.6); border-radius:8px; overflow:hidden; }
+.odo-item { flex:1; padding:1.75rem 1.25rem; border-right:1px solid var(--border); text-align:center; position:relative; overflow:hidden; transition:background 0.25s; }
+.odo-item:last-child { border-right:none; }
+.odo-item::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--orange); transform:scaleX(0); transition:transform 0.35s ease; }
+.odo-item:hover::after { transform:scaleX(1); }
+.odo-item:hover { background:var(--orange-dim); }
+.odo-num { font-family:'Barlow Condensed',sans-serif; font-size:clamp(2rem,4vw,3.5rem); font-weight:900; line-height:1; color:var(--orange); letter-spacing:-0.02em; }
+.odo-unit { font-size:0.45em; font-weight:400; color:var(--muted); vertical-align:super; margin-left:2px; }
+.odo-label { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-top:5px; }
+
+/* ═══ SECTION ═══ */
+.section { max-width:1200px; margin:0 auto; padding:4rem 2rem; }
+.section-header { display:flex; align-items:center; gap:1rem; margin-bottom:2rem; }
+.section-num { font-family:'Barlow Condensed',sans-serif; font-size:3.5rem; font-weight:900; color:var(--border2); line-height:1; }
+.section-title { font-family:'Barlow Condensed',sans-serif; font-size:1.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text); }
+.section-title span { color:var(--orange); }
+.section-line { flex:1; height:1px; background:var(--border2); }
+
+/* ═══ GRADE CARDS ═══ */
+.grade-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.grade-card { background:var(--surface); border:1px solid var(--border2); border-radius:10px; padding:2rem; position:relative; overflow:hidden; transition:transform 0.22s,box-shadow 0.22s; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+.grade-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.1); }
+.grade-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.grade-card.gold-card   { border-color:var(--gold-border);   background:var(--gold-bg); }
+.grade-card.gold-card::before   { background:linear-gradient(90deg,var(--gold),transparent); }
+.grade-card.silver-card { border-color:var(--silver-border); background:var(--silver-bg); }
+.grade-card.silver-card::before { background:linear-gradient(90deg,var(--silver),transparent); }
+.grade-card.bronze-card { border-color:var(--bronze-border); background:var(--bronze-bg); }
+.grade-card.bronze-card::before { background:linear-gradient(90deg,var(--bronze),transparent); }
+.grade-icon { font-size:2.2rem; display:block; margin-bottom:0.6rem; }
+.grade-name { font-family:'Barlow Condensed',sans-serif; font-size:1.8rem; font-weight:900; letter-spacing:0.05em; text-transform:uppercase; }
+.gold-card .grade-name   { color:var(--gold); }
+.silver-card .grade-name { color:var(--silver); }
+.bronze-card .grade-name { color:var(--bronze); }
+.grade-big { font-family:'Barlow Condensed',sans-serif; font-size:5rem; font-weight:900; line-height:1; margin:0.2rem 0; }
+.gold-card .grade-big   { color:var(--gold); }
+.silver-card .grade-big { color:var(--silver); }
+.bronze-card .grade-big { color:var(--bronze); }
+.grade-sub { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:1rem; }
+.grade-req { font-size:13px; color:var(--muted2); line-height:1.5; font-weight:400; border-top:1px solid var(--border2); padding-top:1rem; }
+.grade-bar-track { height:4px; background:var(--bg3); border-radius:99px; margin-top:1rem; overflow:hidden; }
+.grade-bar-fill { height:100%; border-radius:99px; transition:width 1.5s cubic-bezier(.23,1,.32,1); width:0; }
+.gold-card .grade-bar-fill   { background:var(--gold); }
+.silver-card .grade-bar-fill { background:var(--silver); }
+.bronze-card .grade-bar-fill { background:var(--bronze); }
+
+/* ═══ METRICS GRID ═══ */
+.metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+.metric-card { background:var(--surface); border:1px solid var(--border2); border-radius:10px; padding:1.5rem; transition:transform 0.2s,box-shadow 0.2s; position:relative; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.metric-card::after { content:attr(data-icon); position:absolute; right:0.75rem; bottom:0.25rem; font-size:3.5rem; opacity:0.06; pointer-events:none; transition:opacity 0.3s,transform 0.3s; }
+.metric-card:hover::after { opacity:0.12; transform:scale(1.15) rotate(-5deg); }
+.metric-card:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+.metric-label { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:0.65rem; }
+.metric-val { font-family:'Barlow Condensed',sans-serif; font-size:2.8rem; font-weight:900; line-height:1; color:var(--text); }
+.metric-val .unit { font-size:1.1rem; font-weight:400; color:var(--muted); margin-left:3px; }
+.metric-sub { font-size:12px; color:var(--muted2); margin-top:0.4rem; font-weight:400; }
+.metric-card.highlight { border-color:rgba(217,79,10,0.25); background:linear-gradient(135deg,rgba(217,79,10,0.05),var(--surface)); }
+.metric-card.highlight .metric-val { color:var(--orange); }
+
+/* ═══ LEADERBOARD ═══ */
+.leaderboard { background:var(--surface); border:1px solid var(--border2); border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+
+/* Desktop: 7 columns */
+.lb-header { display:grid; grid-template-columns:48px 1fr 140px 70px 70px 120px; padding:0.7rem 1.5rem; background:var(--bg2); border-bottom:1px solid var(--border2); }
+.lb-row    { display:grid; grid-template-columns:48px 1fr 140px 70px 70px 120px; padding:0.85rem 1.5rem; border-bottom:1px solid var(--border); align-items:center; transition:background 0.15s; }
+.lb-row:last-child { border-bottom:none; }
+.lb-row:hover { background:rgba(0,0,0,0.02); }
+.lb-row.top1 { background:rgba(184,134,11,0.06); }
+.lb-row.top2 { background:rgba(90,112,128,0.05); }
+.lb-row.top3 { background:rgba(139,90,43,0.05); }
+.lb-col { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+.lb-col.right { text-align:right; }
+.lb-rank { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:900; color:var(--muted); }
+.top1 .lb-rank { color:var(--gold); }
+.top2 .lb-rank { color:var(--silver); }
+.top3 .lb-rank { color:var(--bronze); }
+.lb-name-cell { display:flex; align-items:flex-start; gap:10px; }
+.lb-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-size:0.85rem; font-weight:800; flex-shrink:0; margin-top:2px; }
+.top1 .lb-avatar { background:var(--gold-bg);   color:var(--gold);   border:1px solid var(--gold-border); }
+.top2 .lb-avatar { background:var(--silver-bg); color:var(--silver); border:1px solid var(--silver-border); }
+.top3 .lb-avatar { background:var(--bronze-bg); color:var(--bronze); border:1px solid var(--bronze-border); }
+.lb-row:not(.top1):not(.top2):not(.top3) .lb-avatar { background:var(--bg2); color:var(--muted2); border:1px solid var(--border2); }
+.lb-name-info { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.lb-name { font-family:'Barlow Condensed',sans-serif; font-size:1.05rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lb-badges { display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+.lb-grade-badge { font-family:'Share Tech Mono',monospace; font-size:8px; padding:2px 6px; border-radius:3px; letter-spacing:0.1em; text-transform:uppercase; display:inline-block; }
+.badge-gold   { background:var(--gold-bg);   color:var(--gold);   border:1px solid var(--gold-border); }
+.badge-silver { background:var(--silver-bg); color:var(--silver); border:1px solid var(--silver-border); }
+.badge-bronze { background:var(--bronze-bg); color:var(--bronze); border:1px solid var(--bronze-border); }
+
+/* Instagram button — shown inline in name cell */
+.lb-insta-btn { display:inline-flex; align-items:center; gap:4px; padding:2px 7px; border-radius:4px; background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color:#fff; font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:0.06em; text-decoration:none; font-weight:500; transition:opacity 0.2s,transform 0.2s; white-space:nowrap; }
+.lb-insta-btn:hover { opacity:0.85; transform:scale(1.04); }
+.lb-insta-btn svg { flex-shrink:0; }
+
+/* Bar + KM cell */
+.lb-bar-cell { display:flex; align-items:center; gap:8px; }
+.lb-bar-track { flex:1; height:3px; background:var(--bg3); border-radius:99px; overflow:hidden; }
+.lb-bar-fill { height:100%; border-radius:99px; background:var(--orange); transition:width 1.5s cubic-bezier(.23,1,.32,1); width:0; }
+.top1 .lb-bar-fill { background:var(--gold); }
+.top2 .lb-bar-fill { background:var(--silver); }
+.top3 .lb-bar-fill { background:var(--bronze); }
+.lb-km    { font-family:'Barlow Condensed',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text); }
+.lb-rides { font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:600; text-align:right; color:var(--muted2); }
+.lb-days  { font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:600; text-align:right; color:var(--muted2); }
+
+/* ═══ DESTINATIONS ═══ */
+.dest-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.dest-card { background:var(--surface); border:1px solid var(--border2); border-radius:10px; padding:1.25rem; transition:transform 0.2s,box-shadow 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.dest-card:hover { transform:translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.09); }
+.dest-emoji { font-size:1.8rem; display:block; margin-bottom:0.4rem; }
+.dest-tag  { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--orange); font-weight:700; margin-bottom:3px; }
+.dest-name { font-family:'Barlow Condensed',sans-serif; font-size:1.05rem; font-weight:800; text-transform:uppercase; letter-spacing:0.03em; color:var(--text); line-height:1.1; }
+.dest-state { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.1em; color:var(--muted); text-transform:uppercase; margin-top:3px; margin-bottom:0.6rem; }
+.dest-stats { display:flex; gap:12px; flex-wrap:wrap; }
+.dest-stat { text-align:center; }
+.dest-stat-val { font-family:'Barlow Condensed',sans-serif; font-size:1.3rem; font-weight:700; color:var(--orange); line-height:1; }
+.dest-stat-lbl { font-family:'Share Tech Mono',monospace; font-size:8px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-top:1px; }
+
+/* ═══ FOOTER ═══ */
+.footer { text-align:center; padding:2.5rem; border-top:1px solid var(--border2); background:var(--surface); }
+.footer-logo { font-family:'Barlow Condensed',sans-serif; font-size:2.5rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--bg3);font-style: italic; }
+/*.footer-logo span { color:var(--yellow-hl); }*/
+.footer-vstromers{
+  color: var(--yellow-hl);
+  -webkit-text-stroke: 2px rgba(0,0,0,0.55);
+  paint-order: stroke fill;
+}
+
+.footer-cbe{
+  color:#000;
+}
+.footer-sub { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--muted); text-transform:uppercase; margin-top:0.4rem; }
+.footer-contact { display:flex; align-items:center; justify-content:center; gap:1.5rem; margin-top:1rem; flex-wrap:wrap; }
+.footer-contact a { display:inline-flex; align-items:center; gap:6px; font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:0.08em; color:var(--muted2); text-decoration:none; transition:color 0.2s; }
+.footer-contact a:hover { color:var(--orange); }
+.footer-contact .insta-link { padding:4px 10px; border-radius:5px; background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color:#fff; }
+.footer-contact .insta-link:hover { opacity:0.85; color:#fff; }
+.footer-divider { width:1px; height:16px; background:var(--border2); }
+
+/* ANIMATIONS */
+@keyframes fadeDown { from{opacity:0;transform:translateY(-14px)} to{opacity:1;transform:none} }
+@keyframes fadeUp   { from{opacity:0;transform:translateY(14px)}  to{opacity:1;transform:none} }
+.reveal { opacity:0; transform:translateY(20px); transition:opacity 0.55s ease,transform 0.55s ease; }
+.reveal.visible { opacity:1; transform:none; }
+
+/* ═══ MOBILE (≤ 600px) ═══ */
+@media (max-width:600px) {
+
+  /* NAV */
+  .nav { padding:0.75rem 1rem; flex-wrap:wrap; gap:0.35rem; }
+  .nav-logo { font-size:1.1rem; }
+  .nav-right { gap:0.75rem; flex-wrap:wrap; }
+  .nav-mono { font-size:9px; letter-spacing:0.06em; }
+  .nav-dot { width:5px; height:5px; margin-right:4px; }
+
+  /* HERO */
+  .hero { min-height:auto; }
+  .hero-content { padding:2rem 1.25rem 1.5rem; }
+  .hero-eyebrow { font-size:9px; letter-spacing:0.18em; margin-bottom:0.9rem; }
+  .hero-title { font-size:clamp(3.2rem,20vw,5rem); line-height:0.88; }
+  .hero-sub { font-size:0.85rem; letter-spacing:0.14em; margin-top:0.75rem; }
+
+  /* ODOMETER: 3-column grid */
+  .odometer-row { display:grid; grid-template-columns:1fr 1fr 1fr; margin-top:1.5rem; border-radius:6px; }
+  .odo-item { padding:1rem 0.6rem; border-right:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .odo-item:nth-child(3n) { border-right:none; }
+  .odo-item:nth-child(n+4) { border-bottom:none; }
+  .odo-num { font-size:1.55rem; }
+  .odo-label { font-size:8px; letter-spacing:0.1em; margin-top:3px; }
+
+  /* SECTIONS */
+  .section { padding:2rem 1rem; }
+  .section-header { gap:0.6rem; margin-bottom:1.25rem; }
+  .section-num { font-size:2.2rem; }
+  .section-title { font-size:1.25rem; }
+
+  /* GRADE CARDS: single column */
+  .grade-grid { grid-template-columns:1fr; gap:12px; }
+  .grade-card { padding:1.4rem 1.25rem; }
+  .grade-icon { font-size:1.8rem; margin-bottom:0.4rem; }
+  .grade-name { font-size:1.5rem; }
+  .grade-big  { font-size:3.8rem; }
+  .grade-sub  { font-size:9px; }
+  .grade-req  { font-size:12px; padding-top:0.75rem; }
+
+  /* METRICS: 2-column */
+  .metrics-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .metric-card { padding:1rem 0.9rem; }
+  .metric-label { font-size:8px; letter-spacing:0.1em; margin-bottom:0.4rem; }
+  .metric-val { font-size:2rem; }
+  .metric-val .unit { font-size:0.85rem; }
+  .metric-sub { font-size:11px; margin-top:0.3rem; line-height:1.35; }
+  .metric-card::after { font-size:2.6rem; }
+
+  /* ── LEADERBOARD MOBILE ── 
+     Columns: # | Rider (name+badge+insta) | KM | Rides
+     Bar cell hidden. Instagram col hidden (moved into name cell). */
+  .lb-header,
+.lb-row {
+  grid-template-columns: 26px 1fr 52px 38px 38px;
+  padding: 0.6rem 0.75rem;
+  gap: 0 6px;
+}
+
+/* Hide only DAYS column 
+.lb-header > .lb-col:nth-child(5),
+.lb-row .lb-days {
+  display: none;
+}*/
+
+/* Keep KM column visible but remove chart */
+.lb-bar-track,
+.lb-bar-fill {
+  display: none;
+}
+
+/* Make KM cell behave like plain text */
+.lb-bar-cell {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* Rank */
+.lb-rank {
+  font-size: 0.95rem;
+}
+
+/* Avatar */
+.lb-avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 0.65rem;
+  margin-top: 1px;
+}
+
+/* Rider info */
+.lb-name-cell {
+  gap: 6px;
+  min-width: 0;
+}
+
+.lb-name {
+  font-size: 0.78rem;
+  letter-spacing: 0;
+}
+
+.lb-grade-badge {
+  font-size: 6.5px;
+  padding: 1px 4px;
+}
+
+.lb-insta-btn {
+  font-size: 7.5px;
+  padding: 2px 5px;
+  gap: 3px;
+}
+
+.lb-insta-btn svg {
+  width: 9px;
+  height: 9px;
+}
+
+/* KM column */
+.lb-km {
+  font-size: 0.95rem;
+  text-align: right;
+}
+
+/* Rides column */
+.lb-rides {
+  font-size: 0.95rem;
+}
+
+  /* DESTINATIONS: 2-column */
+  .dest-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .dest-card { padding:1rem; border-radius:8px; }
+  .dest-emoji { font-size:1.5rem; margin-bottom:0.3rem; }
+  .dest-tag  { font-size:8px; letter-spacing:0.08em; }
+  .dest-name { font-size:0.9rem; }
+  .dest-state { font-size:8px; margin-bottom:0.5rem; }
+  .dest-stat-val { font-size:1.1rem; }
+  .dest-stat-lbl { font-size:7px; }
+
+  /* FOOTER */
+  .footer { padding:1.5rem 1rem; }
+  .footer-logo { font-size:1.8rem; }
+  .footer-sub  { font-size:8px; letter-spacing:0.12em; }
+  .footer-contact { gap:0.75rem; }
+  .footer-contact a { font-size:10px; }
+  .footer-divider { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <nav class="nav">
+    <div class="nav-logo">
+  <span class="hl-yellow">V-</span>
+  <span class="hl-yellow">Stromers</span>
+  <span class="hl-black">CBE</span>
+</div>
+    <div class="nav-right">
+      <div class="nav-mono"><span class="nav-dot"></span>12 Rides Completed</div>
+      <div class="nav-mono">Est. Aug 2025 · Coimbatore</div>
+    </div>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">// Coimbatore Riding Chapter · Est. August 2025</div>
+    <div class="hero-title">
+      <div>Club</div>
+      <div class="hl">Stats</div>
+      <div class="outline">Overview</div>
+    </div>
+    <div class="hero-sub">Every kilometer. Every rider. Every ride.</div>
+
+    <div class="odometer-row">
+      <div class="odo-item"><div class="odo-num" data-target="8573">0<span class="odo-unit">km</span></div><div class="odo-label">Total Ride KMs</div></div>
+      <div class="odo-item"><div class="odo-num" data-target="36">0</div><div class="odo-label">Riders</div></div>
+      <div class="odo-item"><div class="odo-num" data-target="12">0</div><div class="odo-label">Rides Done</div></div>
+      <div class="odo-item"><div class="odo-num" data-target="27">0</div><div class="odo-label">Total Days</div></div>
+      <div class="odo-item"><div class="odo-num" data-target="12">0</div><div class="odo-label">Destinations</div></div>
+      <div class="odo-item"><div class="odo-num" data-target="38">0<span class="odo-unit">kmpl</span></div><div class="odo-label">Avg Fuel Economy</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- GRADE TIERS -->
+<div class="section reveal">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <div class="section-title">Grade <span>Tiers</span></div>
+    <div class="section-line"></div>
+  </div>
+  <div class="grade-grid">
+    <div class="grade-card gold-card">
+      <span class="grade-icon">🥇</span>
+      <div class="grade-name">Gold</div>
+      <div class="grade-big count-up" data-target="12">0</div>
+      <div class="grade-sub">Riders Achieved</div>
+      <div class="grade-req">3+ days ride participation in a single ride. The backbone of V-Stromers — riders who commit to the long haul.</div>
+      <div class="grade-bar-track"><div class="grade-bar-fill" data-pct="33"></div></div>
+    </div>
+    <div class="grade-card silver-card">
+      <span class="grade-icon">🥈</span>
+      <div class="grade-name">Silver</div>
+      <div class="grade-big count-up" data-target="18">0</div>
+      <div class="grade-sub">Riders Achieved</div>
+      <div class="grade-req">2+ days participation in a single ride. The growing majority — solid, committed members of the chapter.</div>
+      <div class="grade-bar-track"><div class="grade-bar-fill" data-pct="50"></div></div>
+    </div>
+    <div class="grade-card bronze-card">
+      <span class="grade-icon">🥉</span>
+      <div class="grade-name">Bronze</div>
+      <div class="grade-big count-up" data-target="6">0</div>
+      <div class="grade-sub">Riders Achieved</div>
+      <div class="grade-req">1 day ride participation. Every legend starts somewhere — these riders have their first stamp in the V-Stromers log.</div>
+      <div class="grade-bar-track"><div class="grade-bar-fill" data-pct="17"></div></div>
+    </div>
+  </div>
+  <div style="margin-top:12px;padding:1rem 1.25rem;background:var(--surface);border:1px solid var(--border2);border-radius:8px;display:flex;gap:2rem;flex-wrap:wrap;">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);letter-spacing:0.06em;"><strong style="color:var(--text)">DIAMOND</strong> — 7+ days single ride</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);letter-spacing:0.06em;"><strong style="color:var(--text)">PLATINUM</strong> — 15+ days single ride</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);letter-spacing:0.06em;"><strong style="color:var(--text)">NOTE</strong> — Grade based on rides, not total days across all rides. (P) = Pillion rider</div>
+  </div>
+</div>
+
+<!-- METRICS -->
+<div class="section reveal" style="padding-top:0;">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <div class="section-title">Key <span>Metrics</span></div>
+    <div class="section-line"></div>
+  </div>
+  <div class="metrics-grid">
+    <div class="metric-card highlight" data-icon="🏆"><div class="metric-label">Most KMs — Single Rider</div><div class="metric-val"><span class="count-up" data-target="8207">0</span><span class="unit">km</span></div><div class="metric-sub">NS Sathish · 10 rides · 25 days</div></div>
+    <div class="metric-card" data-icon="📅"><div class="metric-label">Most Rides Completed</div><div class="metric-val"><span class="count-up" data-target="10">0</span><span class="unit">rides</span></div><div class="metric-sub">NS Sathish — all 10 known-destination rides</div></div>
+    <div class="metric-card" data-icon="🗓️"><div class="metric-label">Most Days on Road</div><div class="metric-val"><span class="count-up" data-target="25">0</span><span class="unit">days</span></div><div class="metric-sub">NS Sathish — longest cumulative time</div></div>
+    <div class="metric-card" data-icon="🌄"><div class="metric-label">Longest Single Ride</div><div class="metric-val"><span class="count-up" data-target="1461">0</span><span class="unit">km</span></div><div class="metric-sub">V-S #5 · Gokarna · Karnataka · 5 days</div></div>
+    <div class="metric-card" data-icon="👥"><div class="metric-label">Founding Crew · V-S #1</div><div class="metric-val"><span class="count-up" data-target="7">0</span><span class="unit">riders</span></div><div class="metric-sub">The original 7 · Dhanushkodi · Aug 2025</div></div>
+    <div class="metric-card" data-icon="➕"><div class="metric-label">Biggest Group — Single Ride</div><div class="metric-val"><span class="count-up" data-target="22">0</span><span class="unit">riders</span></div><div class="metric-sub">V-S #9 · Cherai · 19 bikes + 3 pillions</div></div>
+    <div class="metric-card" data-icon="⛽"><div class="metric-label">Best Fuel Economy</div><div class="metric-val"><span class="count-up" data-target="40">0</span><span class="unit">kmpl</span></div><div class="metric-sub">Achieved on V-S #11 Yelagiri &amp; V-S #12 Sennimalai</div></div>
+    <div class="metric-card" data-icon="⭐"><div class="metric-label">Diamond Eligible</div><div class="metric-val"><span class="count-up" data-target="1">0</span><span class="unit">rider</span></div><div class="metric-sub">7+ days single ride · NS Sathish (25 days)</div></div>
+    <div class="metric-card" data-icon="📍"><div class="metric-label">States Ridden In</div><div class="metric-val"><span class="count-up" data-target="4">0</span><span class="unit">states</span></div><div class="metric-sub">Tamil Nadu · Karnataka · Kerala · Goa</div></div>
+    <div class="metric-card" data-icon="🏍️"><div class="metric-label">Pillion Riders</div><div class="metric-val"><span class="count-up" data-target="9">0</span><span class="unit">riders</span></div><div class="metric-sub">Members marked (P) in official roster</div></div>
+    <div class="metric-card" data-icon="📆"><div class="metric-label">Total Days Ridden</div><div class="metric-val"><span class="count-up" data-target="27">0</span><span class="unit">days</span></div><div class="metric-sub">Across all 12 rides · Aug 2025 – Apr 2026</div></div>
+    <div class="metric-card" data-icon="🔗"><div class="metric-label">Riders with Instagram</div><div class="metric-val"><span class="count-up" data-target="27">0</span><span class="unit">riders</span></div><div class="metric-sub">Out of 36 total registered members</div></div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="section reveal" style="padding-top:0;">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <div class="section-title">KM <span>Leaderboard</span></div>
+    <div class="section-line"></div>
+  </div>
+  <div class="leaderboard">
+    <div class="lb-header">
+      <div class="lb-col">#</div>
+      <div class="lb-col">Rider</div>
+      <div class="lb-col right">Kilometers</div>
+      <div class="lb-col right">Rides</div>
+      <div class="lb-col right">Days</div>
+    </div>
+    <div id="lbBody"></div>
+  </div>
+</div>
+
+<!-- DESTINATIONS -->
+<div class="section reveal" style="padding-top:0;">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <div class="section-title">All <span>12 Destinations</span></div>
+    <div class="section-line"></div>
+  </div>
+  <div class="dest-grid" id="destGrid"></div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-logo">
+  <span class="footer-vstromers">V-STROMERS</span>
+  <span class="footer-cbe">CBE</span>
+</div>
+  <div class="footer-sub">Coimbatore Riding Chapter · Est. August 2025 · 36 Riders &amp; Counting</div>
+  <div class="footer-contact">
+    <a href="mailto:vstromers.cbe@gmail.com">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      vstromers.cbe@gmail.com
+    </a>
+    <div class="footer-divider"></div>
+    <a class="insta-link" href="https://instagram.com/vstromers.cbe" target="_blank" rel="noopener">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
+      @vstromers.cbe
+    </a>
+  </div>
+</div>
+
+<script>
+const RIDERS = [
+  {name:"NS SATHISH",              rides:10, km:8207, days:25, grade:"gold",   insta:"nssathish18"},
+  {name:"ARUN VIJAY",              rides:7,  km:6545, days:20, grade:"gold",   insta:"arunvijay_0704"},
+  {name:"ABDUL WAHIT",             rides:8,  km:6817, days:21, grade:"gold",   insta:"abdulwahit745"},
+  {name:"TAMILARASAN",             rides:6,  km:6054, days:18, grade:"gold",   insta:"tamilarasanmanokaran"},
+  {name:"SANTHOSH",                rides:7,  km:6308, days:19, grade:"gold",   insta:"shanthosh_suku"},
+  {name:"RAJESH BABU",             rides:7,  km:5306, days:16, grade:"gold",   insta:"rajesh_babu28"},
+  {name:"DHANAVANTH",              rides:7,  km:4130, days:12, grade:"gold",   insta:"dhanavant"},
+  {name:"MURALIDHARAN",            rides:8,  km:3865, days:11, grade:"silver", insta:"murali.chandran.92123"},
+  {name:"SRIBALU",                 rides:4,  km:3126, days:9,  grade:"gold",   insta:"sri_balu_avd"},
+  {name:"VIJAY (P)",               rides:4,  km:2773, days:9,  grade:"gold",   insta:"chaance_furlong"},
+  {name:"PAVITHRA (P)",            rides:4,  km:1990, days:7,  grade:"silver", insta:"pavi_ni29"},
+  {name:"FAIZAL",                  rides:2,  km:1336, days:4,  grade:"silver", insta:null},
+  {name:"VIKRAM",                  rides:4,  km:1366, days:5,  grade:"silver", insta:"das.ist.viki"},
+  {name:"BHUVANESHWARAN",          rides:1,  km:1642, days:4,  grade:"gold",   insta:"bhuvaneshwaran_bhuvi_5"},
+  {name:"AFRUDEEN",                rides:3,  km:1691, days:6,  grade:"silver", insta:"afrudeen44"},
+  {name:"KUMARAVEL",               rides:3,  km:1691, days:6,  grade:"silver", insta:"kumar60066"},
+  {name:"RENGA",                   rides:3,  km:1309, days:5,  grade:"silver", insta:"renga.cbe"},
+  {name:"GANGARAJ",                rides:2,  km:1276, days:4,  grade:"silver", insta:"imgraj"},
+  {name:"TAMIZH SELVAN",           rides:2,  km:1200, days:4,  grade:"silver", insta:"thamizh_narayanaswamy"},
+  {name:"ARAVIND (TRICHY)",        rides:1,  km:700,  days:2,  grade:"silver", insta:"thala_ak_aravind"},
+  {name:"HARI SHANKAR",            rides:1,  km:598,  days:2,  grade:"silver", insta:null},
+  {name:"HARI KRISHNAN",           rides:1,  km:598,  days:2,  grade:"silver", insta:"harish.onfilm"},
+  {name:"RISATH",                  rides:1,  km:491,  days:2,  grade:"silver", insta:"risath_4555"},
+  {name:"VINODTH",                 rides:1,  km:491,  days:2,  grade:"silver", insta:"vinodh_sx250"},
+  {name:"SUNDARALINGAM",           rides:1,  km:491,  days:2,  grade:"silver", insta:"ar_sundaralingam_j"},
+  {name:"RAJESHWARAN",             rides:1,  km:491,  days:2,  grade:"silver", insta:"rajeswaran_kanthan"},
+  {name:"HANUSH",                  rides:1,  km:1082, days:3,  grade:"gold",   insta:null},
+  {name:"SOWMIYA (P)",             rides:1,  km:522,  days:2,  grade:"silver", insta:null},
+  {name:"MANJU (P)",               rides:1,  km:522,  days:2,  grade:"silver", insta:null},
+  {name:"ARAVINTH (P)",            rides:1,  km:677,  days:2,  grade:"silver", insta:"aravinth_s_7177"},
+  {name:"KRUBHAKARAN",             rides:1,  km:677,  days:2,  grade:"silver", insta:"krutha"},
+  {name:"JOSHUA",                  rides:1,  km:677,  days:2,  grade:"silver", insta:"__bin_laden__"},
+  {name:"LEO PRASANTH",            rides:1,  km:308,  days:1,  grade:"bronze", insta:"leodhonija"},
+  {name:"DIVYA (P)",               rides:1,  km:308,  days:1,  grade:"bronze", insta:null},
+  {name:"JHOSNA MURALI (P)",       rides:1,  km:295,  days:1,  grade:"bronze", insta:null},
+  {name:"SUDHARSHAN",              rides:1,  km:70,   days:1,  grade:"bronze", insta:null},
+  {name:"RINKESH RAJESH BABU (P)", rides:1,  km:70,   days:1,  grade:"bronze", insta:null},
+];
+
+const DESTINATIONS = [
+  {tag:"V-S #1",  name:"Dhanushkodi",     emoji:"🌊", state:"Tamil Nadu",  km:1082, days:3, bikes:7,  date:"15–17 Aug 2025"},
+  {tag:"V-S #2",  name:"Valparai",        emoji:"🌿", state:"Tamil Nadu",  km:308,  days:1, bikes:3,  date:"14 Sep 2025"},
+  {tag:"V-S #3",  name:"Kolli Hills",     emoji:"🏔️", state:"Tamil Nadu",  km:522,  days:2, bikes:12, date:"27–28 Sep 2025"},
+  {tag:"V-S #4",  name:"Megamalai",       emoji:"🌬️", state:"Tamil Nadu",  km:678,  days:2, bikes:17, date:"25–26 Oct 2025"},
+  {tag:"V-S #5",  name:"Gokarna",         emoji:"🏝️", state:"Karnataka",   km:1461, days:5, bikes:6,  date:"12–16 Nov 2025"},
+  {tag:"V-S #6",  name:"Karaikudi",       emoji:"🏛️", state:"Tamil Nadu",  km:668,  days:2, bikes:9,  date:"13–14 Dec 2025"},
+  {tag:"V-S #7",  name:"Hampi & Badami",  emoji:"🗿", state:"Karnataka",   km:1643, days:4, bikes:5,  date:"15–18 Jan 2026"},
+  {tag:"V-S #8",  name:"Dhondelling",     emoji:"🏞️", state:"Tamil Nadu",  km:295,  days:1, bikes:5,  date:"17 Jan 2026"},
+  {tag:"V-S #9",  name:"Cherai",          emoji:"🏖️", state:"Kerala",      km:492,  days:2, bikes:19, date:"14–15 Feb 2026"},
+  {tag:"V-S #10", name:"Wayanad",         emoji:"☁️", state:"Kerala",      km:509,  days:2, bikes:4,  date:"28–29 Mar 2026"},
+  {tag:"V-S #11", name:"Yelagiri",        emoji:"⛰️", state:"Tamil Nadu",  km:845,  days:2, bikes:13, date:"18–19 Apr 2026"},
+  {tag:"V-S #12", name:"Sennimalai Peak", emoji:"🌄", state:"Tamil Nadu",  km:70,   days:1, bikes:5,  date:"26 Apr 2026"},
+];
+
+function initials(name) {
+  const p = name.replace(/\s*\(.*?\)/g,'').trim().split(' ');
+  return (p[0][0]+(p[1]?p[1][0]:'')).toUpperCase();
+}
+
+const instaIcon = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>`;
+
+function renderLeaderboard() {
+  const sorted = [...RIDERS].sort((a,b) => b.km - a.km);
+  const maxKm = sorted[0].km;
+  document.getElementById('lbBody').innerHTML = sorted.map((r,i) => {
+    const cls = i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const pct = Math.round(r.km/maxKm*100);
+    const instaBtn = r.insta
+      ? `<a class="lb-insta-btn" href="https://instagram.com/${r.insta}" target="_blank" rel="noopener">${instaIcon}@${r.insta}</a>`
+      : '';
+    const cleanName = r.name.replace(/\s*\(P\)/g,'').replace(/\s*\(.*?\)/g,'');
+    return `
+    <div class="lb-row ${cls}">
+      <div class="lb-rank">${String(i+1).padStart(2,'0')}</div>
+      <div class="lb-name-cell">
+        <div class="lb-avatar">${initials(r.name)}</div>
+        <div class="lb-name-info">
+          <div class="lb-name">${cleanName}</div>
+          <div class="lb-badges">
+            <span class="lb-grade-badge badge-${r.grade}">${r.grade}</span>
+            ${instaBtn}
+          </div>
+        </div>
+      </div>
+      <div class="lb-bar-cell">
+        <div class="lb-bar-track"><div class="lb-bar-fill" data-pct="${pct}"></div></div>
+        <div class="lb-km">${r.km.toLocaleString()}</div>
+      </div>
+      <div class="lb-rides">${r.rides}</div>
+      <div class="lb-days">${r.days}</div>
+      <div><!-- desktop insta col (empty — insta is in name cell) --></div>
+    </div>`;
+  }).join('');
+}
+
+function renderDestinations() {
+  document.getElementById('destGrid').innerHTML = DESTINATIONS.map(d => `
+    <div class="dest-card">
+      <span class="dest-emoji">${d.emoji}</span>
+      <div class="dest-tag">${d.tag} · ${d.date}</div>
+      <div class="dest-name">${d.name}</div>
+      <div class="dest-state">${d.state}</div>
+      <div class="dest-stats">
+        <div class="dest-stat"><div class="dest-stat-val">${d.km.toLocaleString()}</div><div class="dest-stat-lbl">km</div></div>
+        <div class="dest-stat"><div class="dest-stat-val">${d.days}</div><div class="dest-stat-lbl">${d.days===1?'day':'days'}</div></div>
+        <div class="dest-stat"><div class="dest-stat-val">${d.bikes}</div><div class="dest-stat-lbl">bikes</div></div>
+      </div>
+    </div>`).join('');
+}
+
+function animateCount(el, target, duration=1800) {
+  const start = performance.now();
+  const update = (now) => {
+    const p = Math.min((now-start)/duration,1);
+    const ease = 1-Math.pow(1-p,4);
+    el.textContent = Math.round(ease*target).toLocaleString();
+    if (p<1) requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
+}
+
+function startOdometers() {
+  document.querySelectorAll('.odo-num[data-target]').forEach(el => {
+    const target = +el.dataset.target;
+    const unit = el.querySelector('.odo-unit');
+    const unitHTML = unit ? unit.outerHTML : '';
+    const proxy = { set textContent(v){ el.innerHTML = v + unitHTML; } };
+    animateCount(proxy, target, 2200);
+  });
+}
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const el = entry.target;
+    el.classList.add('visible');
+    el.querySelectorAll('.count-up[data-target]').forEach(c => animateCount(c, +c.dataset.target, 1600));
+    el.querySelectorAll('[data-pct]').forEach(bar => { setTimeout(()=>{ bar.style.width=bar.dataset.pct+'%'; },200); });
+    io.unobserve(el);
+  });
+}, { threshold:0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+renderLeaderboard();
+renderDestinations();
+setTimeout(startOdometers, 400);
+</script>
+</body>
+</html>
